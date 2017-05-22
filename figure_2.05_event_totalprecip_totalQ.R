@@ -25,6 +25,6 @@ pvec.in = pvec.mm/25.4
 
 #  Add SCS CNs
 S.CN60 = 1000/60 - 10
-Q.CN60 = ((pvec.in-0.2*S.CN60)^2)/(pvec.in+0.8*S.CN60)
+Q.CN60 = ((pvec.in-0.2*S.CN60)^2)/(pvec.in + 0.8*S.CN60)
 Q.CN60[Q.CN60<=0] = NA
 
