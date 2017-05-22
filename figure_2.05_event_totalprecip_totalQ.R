@@ -1,7 +1,7 @@
 #Figure 2.5
 #Total event discharge vs. total precip.
 #Using data from EPA Events Report Table 2.3
-#Script written by Kris Taniguchi, SDSU (kristaniguchi@gmail.com)
+#Script written by Kris Taniguchi, SDSU (kristaniguchi@gmail.com).  Updated by TBiggs, 2017-05-22.
 
 #Set working directory to the data folder, script directory will be used if sourcing functions
 # getwd() #the directory where the script is saved
