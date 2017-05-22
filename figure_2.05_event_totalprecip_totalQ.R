@@ -39,7 +39,7 @@ plot(data$total.precip.mm, data$total.q.obs.mm, xlab = "", pch=16, cex = 1.2,las
 lines(pvec.mm,Q.CN85,col="grey")
 lines(pvec.mm,Q.CN80,col="grey")
 lines(pvec.mm,Q.CN90,col="grey")
-text(x=60,y=38,labels="CN=90",cex=0.8)
+text(x=60,y=40,labels="CN=90",cex=0.8)
 text(x=60,y=23,labels="80",cex=0.8)
 text(x=60,y=30,labels="85",cex=0.8)
 
