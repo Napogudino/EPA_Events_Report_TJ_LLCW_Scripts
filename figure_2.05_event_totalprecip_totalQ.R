@@ -11,20 +11,40 @@
 
 #Read in table 2.3 summary table of observed events
 # data = read.csv("summary_table_obs_allevents.csv")
+# Github code here:
 data = read.csv("https://raw.githubusercontent.com/kristaniguchi/EPA_Events_Report_TJ_LLCW_Data/master/summary_table_obs_allevents.csv")
 
 ###############################################################################################################
 
-#Figure 2.5 - rainfall-runoff relationship
-#plot in log-log space
-par(mar = c(4, 4.1, 0, 0.1))
-plot(data$total.precip.mm, data$total.q.obs.mm, log = "xy", ylab = "Event Total Q (mm)", xlab = "Event Total Precip. (mm)", pch=16, cex = 1.2)
-
+#  Add SCS CNs
 pvec.mm = seq(0,80,by=1)
 pvec.in = pvec.mm/25.4
 
-#  Add SCS CNs
-S.CN60 = 1000/60 - 10
-Q.CN60 = ((pvec.in-0.2*S.CN60)^2)/(pvec.in + 0.8*S.CN60)
-Q.CN60[Q.CN60<=0] = NA
+S.CN85 = 1000/85 - 10
+Q.CN85 = ((pvec.in-0.2*S.CN85)^2)/(pvec.in + 0.8*S.CN85)*25.4
+Q.CN85[pvec.in<0.2*S.CN85] = 0
+
+S.CN80 = 1000/80 - 10
+Q.CN80 = ((pvec.in-0.2*S.CN80)^2)/(pvec.in + 0.8*S.CN80)*25.4
+Q.CN80[pvec.in<0.2*S.CN80] = 0
+
+S.CN90 = 1000/90 - 10
+Q.CN90 = ((pvec.in-0.2*S.CN90)^2)/(pvec.in + 0.8*S.CN90)*25.4
+Q.CN90[pvec.in<0.2*S.CN90] = 0
+
+#Figure 2.5 - rainfall-runoff relationship
+#plot in log-log space
+par(mfrow=c(2,1),mar = c(1.5, 1, 1, 1),oma=c(3,3,0,0))
+plot(data$total.precip.mm, data$total.q.obs.mm, xlab = "", pch=16, cex = 1.2,las=1)
+lines(pvec.mm,Q.CN85,col="grey")
+lines(pvec.mm,Q.CN80,col="grey")
+lines(pvec.mm,Q.CN90,col="grey")
+text(x=60,y=38,labels="CN=90",cex=0.8)
+text(x=60,y=23,labels="80",cex=0.8)
+text(x=60,y=30,labels="85",cex=0.8)
+
+mtext(side=2, "Event Total Q (mm)",line=3)
+plot(data$total.precip.mm, data$total.q.obs.mm, log="xy",ylab = "Event Total Q (mm)", xlab = "Event Total Precip. (mm)", pch=16, cex = 1.2,las=1)
+mtext(side=2,"Event Total Q (mm)",line=3)
+mtext(side=1,"Event Rainfall (mm)",line=3)
 
