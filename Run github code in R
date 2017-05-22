@@ -1,0 +1,6 @@
+#  Run github R code
+
+#  Figure 2.5
+url.load.run.from.github = "https://raw.githubusercontent.com/tbiggsgithub/EPA_Events_Report_TJ_LLCW_Scripts/master/figure_2.05_event_totalprecip_totalQ.R"
+script.load.run.from.github = getURL(url.load.run.from.github)
+eval(parse(text=script.load.run.from.github))
