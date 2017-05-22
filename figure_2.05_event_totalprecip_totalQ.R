@@ -48,7 +48,7 @@ plot(data$total.precip.mm, data$total.q.obs.mm, log="xy",ylab = "Event Total Q (
 xats = c(5,10,20,50,90)
 yats = c(0.1,0.5,1,2,5,10,20,50)
 yats.txt = c("0.1","0.5","1","2","5","10","20","50")
-axis(side=2,at=yats,labels=yats.txt)
+axis(side=2,at=yats,labels=yats.txt,las=1)
 axis(side=1,at=xats,labels=xats)
 
 mtext(side=2,"Event Total Q (mm)",line=3)
