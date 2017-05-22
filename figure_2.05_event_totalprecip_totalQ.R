@@ -19,4 +19,12 @@ data = read.csv("https://raw.githubusercontent.com/kristaniguchi/EPA_Events_Repo
 #plot in log-log space
 par(mar = c(4, 4.1, 0, 0.1))
 plot(data$total.precip.mm, data$total.q.obs.mm, log = "xy", ylab = "Event Total Q (mm)", xlab = "Event Total Precip. (mm)", pch=16, cex = 1.2)
-  
+
+pvec.mm = seq(0,80,by=1)
+pvec.in = pvec.mm/25.4
+
+#  Add SCS CNs
+S.CN60 = 1000/60 - 10
+Q.CN60 = ((pvec.in-0.2*S.CN60)^2)/(P+0.8*S.CN60)
+Q.CN60[Q.CN60<=0] = NA
+
