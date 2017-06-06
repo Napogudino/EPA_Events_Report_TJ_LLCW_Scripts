@@ -12,7 +12,6 @@ setwd('../EPA_Events_Report_TJ_LLCW_Data') #set working directory as the data fo
 #Run the events report script for storm 1 (figure_2.09_storm3_PT_2015_05_15_KTedits04202017.R) to get the appropriate Q, stage, etc.
 source("../EPA_Events_Report_TJ_LLCW_Scripts/figure_2.09_storm3_PT_2015_05_15_KTedits04202017.R")
 
-
 #Dataframe q.data.all is the usable observed data (timeseries of all the good data)
 names(q.data.all)
 date.time = as.POSIXct(q.data.all$date.time) #date.time from obs data
@@ -41,19 +40,27 @@ mtext("SSC g/l",side = 4, line = 3)
 
 #find time of SSC samples #sample1
 ftime = date.time
-target.time = as.POSIXct("2015-05-15 08:30:00",format="%Y-%m-%d %H:%M:%S")  # date and time # of the SSC sample
-match.data0 = approx(date.time, q.cms, target.time) #interpolate the discharge at specified time
-q.data.all #E1
+#target.time = as.POSIXct("2017-02-27 14:00:00",format="%Y-%m-%d %H:%M:%S")  # date and time # of the SSC sample
+target.index = which(as.Date(format(dates.ssc,"%Y-%m-%d")) %in% as.Date(date.time))
+target.times = dates.ssc[target.index]
+
+match.data = rep(NA,times=length(target.times))
+for (e in 1:length(target.times)){
+  difftime = ftime-target.times[e]
+  index = which(abs(difftime)==min(abs(difftime))) #absolute min time diff is when sample was taken (0 is at same time)
+  match.data[e] = q.cms[index] #discharge at that time
+  #q.cms[(index-10):(index+10)]
+}
+match.data[match.data<0.07]=0.07
 
 ###############################################################################################################
 
 #Summary data for Table 3.1:
-match.data = match.data0$y #the discharge at time of SSC collection
-ssc.date.time = target.time #the date.time of SSC collecction
-ssc = x.ssc$g.l[7]
-EMC = mean(ssc)
+#match.data = match.data0$y #the discharge at time of SSC collection
+ssc.date.time = target.times #the date.time of SSC collecction
+ssc = x.ssc$g.l[target.index]
 storm = "Storm 3"
-Event = c("E1") #check back with storm cut off times
+Event = "E1" #check back with storm cut off times
 
 table.3.1.export = data.frame(cbind(as.character(ssc.date.time), ssc, match.data, Event))
 names(table.3.1.export) <- c("Date", "SSC (g/L)", "Q (cms)", "Event")
@@ -61,20 +68,24 @@ names(table.3.1.export) <- c("Date", "SSC (g/L)", "Q (cms)", "Event")
 ###############################################################################################################
 #Table 3.3 Caculations
 #Volume weighted mean (VWM) = sum(C1*Q1, C2*Q2, Cn*Qn) / sum(Q1, Q2, Qn)
-VWM = ssc*match.data/match.data #in this case, only 1 SSC ssample for E1, VWM= SSC
-EMC = ssc
+q.df.all = data.frame(date.time=date.time,q.cms=q.cms)
+q.df = q.df.all[as.Date(q.df.all$date.time)==as.Date("2015-05-15"),]
+SSC.df = data.frame(date.time=dates.ssc,SSC=x.ssc$g.l)
 
-#Load = total q (m3) * VWM (g/L) * 1000L/1 m3 * 1e-6 tonne/g 
-#samples taken during E2 and E3, do not need E1 data for total.q.m3  
-total.q.m3 = total.q.obs.mm/1000*10230000 #convert to m, multiply by 10.23 km2 wtshd area or 10230000 m2
-load.g = VWM*total.q.m3*1000 #1000L = 1m3
-load.ton = load.g * 1e-6 #1 gram = 1e-6 ton
+#total.q.m3 = total.q.obs.mm/1000*10230000 #convert to m, multiply by 10.23 km2 wtshd area or 10230000 m2
+#load.g = VWM*total.q.m3*1000 #1000L = 1m3
+#load.ton = load.g * 1e-6 #1 gram = 1e-6 ton
+
+#setwd('../EPA_Events_Report_TJ_LLCW_Scripts')
+#source("regression_models_SSC_vs_Q.R")
+
+out.data = SSL.calc(Q=q.df,SSC=SSC.df)
 
 #for table 3.3:
 date = obs.summary[,1] 
-event = obs.summary[,5] #second and third event
-date.event = paste(date, event, sep=" ")
-table.3.3.export = data.frame(cbind(date.event, total.q.obs.mm, total.q.m3, load.ton, VWM, EMC)) 
-names(table.3.3.export) <- c("event.date", "total.q.mm", "total.q.m3", "load.ton", "VWM", "EMC")
+event = "E1" # Event number e.g. "E1"
+date.event = paste(date[1], event, sep=" ")
+table.3.3.export = data.frame(event.date= date.event, NSSC=out.data$NSSC,total.q.mm=out.data$Qmm, total.q.m3=out.data$Qm3, VWM=out.data$VWM, SSL.Event.VWM=out.data$SSL.VWM.event,SSL.All.VWM=out.data$SSL.VWM.all,SSL.Rating.no.bcf=out.data$SSL.rating.wo.bcf,SSL.Rating.bcf=out.data$SSL.rating.w.bcf)
+
 
 

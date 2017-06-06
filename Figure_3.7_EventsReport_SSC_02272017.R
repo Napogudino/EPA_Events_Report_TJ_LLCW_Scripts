@@ -4,6 +4,7 @@
 #Kris Taniguchi, SDSU (kristaniguchi@gmail.com) reformatted and updated script
 
 #Set working directory to the data folder, script directory will be used if sourcing functions
+setwd("G:/mydocuments/SDSU/research/tijuana_watershed/writeups/EPA_events_report/EPA_Events_Report_TJ_LLCW_Scripts")
 getwd() #the directory where the script is saved
 setwd('../EPA_Events_Report_TJ_LLCW_Data') #set working directory as the data folder, which is one folder back in it's own folder
 
@@ -40,20 +41,27 @@ mtext("SSC g/l",side = 4, line = 3)
 
 #find time of SSC samples #sample1
 ftime = date.time
-target.time = as.POSIXct("2017-02-27 14:00:00",format="%Y-%m-%d %H:%M:%S")  # date and time # of the SSC sample
-difftime = ftime-target.time
-index = which(difftime==min(abs(difftime))) #absolute min time diff is when sample was taken (0 is at same time)
-match.data = q.cms[index] #discharge at that time
-q.cms[(index-10):(index+10)]
-date.time[index]
+#target.time = as.POSIXct("2017-02-27 14:00:00",format="%Y-%m-%d %H:%M:%S")  # date and time # of the SSC sample
+target.index = which(as.Date(format(dates.ssc,"%Y-%m-%d"))==as.Date("2017-02-27"))
+target.times = dates.ssc[target.index]
+
+match.data = rep(NA,times=length(target.times))
+for (e in 1:length(target.times)){
+  difftime = ftime-target.times[e]
+  index = which(abs(difftime)==min(abs(difftime))) #absolute min time diff is when sample was taken (0 is at same time)
+  match.data[e] = q.cms[index] #discharge at that time
+  #q.cms[(index-10):(index+10)]
+}
+
+#plot(match.data,x.ssc$g.l[target.index],pch=20)
 
 ###############################################################################################################
 
 #Summary data for Table 3.1:
 match.data #the discharge at time of SSC collection
-ssc.date.time = target.time #the date.time of SSC collecction
-ssc = x.ssc$g.l[17]
-EMC = mean(ssc)
+ssc.date.time = target.times #the date.time of SSC collecction
+ssc = x.ssc$g.l[target.index]
+#EMC = sum(ssc*match.data)/sum(match.data)
 storm = "Storm 10"
 Event = "E1"
 table.3.1.export = data.frame(cbind(as.character(ssc.date.time), ssc, match.data, Event))
@@ -62,21 +70,26 @@ names(table.3.1.export) <- c("Date", "SSC (g/L)", "Q (cms)", "Event")
 ###############################################################################################################
 #Table 3.3 Caculations
 #Volume weighted mean (VWM) = sum(C1*Q1, C2*Q2, Cn*Qn) / sum(Q1, Q2, Qn)
-VWM = ssc*match.data/match.data #in this case, only 1 SSC ssample for E1, VWM= SSC
-EMC = ssc
 
 #Load = total q (m3) * VWM (g/L) * 1000L/1 m3 * 1e-6 tonne/g 
 #samples taken during E2 and E3, do not need E1 data for total.q.m3  
-total.q.m3 = total.q.obs.mm/1000*10230000 #convert to m, multiply by 10.23 km2 wtshd area or 10230000 m2
-load.g = VWM*total.q.m3*1000 #1000L = 1m3
-load.ton = load.g * 1e-6 #1 gram = 1e-6 ton
+
+q.df = data.frame(date.time=date.time,q.cms=q.cms)
+SSC.df = data.frame(date.time=dates.ssc,SSC=x.ssc$g.l)
+
+
+#total.q.m3 = total.q.obs.mm/1000*10230000 #convert to m, multiply by 10.23 km2 wtshd area or 10230000 m2
+#load.g = VWM*total.q.m3*1000 #1000L = 1m3
+#load.ton = load.g * 1e-6 #1 gram = 1e-6 ton
+
+setwd('../EPA_Events_Report_TJ_LLCW_Scripts')
+source("regression_models_SSC_vs_Q.R")
+
+out.data = SSL.calc(Q=q.df,SSC=SSC.df)
 
 #for table 3.3:
 date = obs.summary[,1] 
-event = obs.summary[,5] #second and third event
+event = obs.summary[,5] # Event number e.g. "E1"
 date.event = paste(date, event, sep=" ")
-table.3.3.export = data.frame(cbind(date.event, total.q.obs.mm, total.q.m3, load.ton, VWM, EMC)) 
-names(table.3.3.export) <- c("event.date", "total.q.mm", "total.q.m3", "load.ton", "VWM", "EMC")
-
-
+table.3.3.export = data.frame(event.date= date.event, NSSC=out.data$NSSC,total.q.mm=out.data$Qmm, total.q.m3=out.data$Qm3, VWM=out.data$VWM, SSL.Event.VWM=out.data$SSL.VWM.event,SSL.All.VWM=out.data$SSL.VWM.all,SSL.Rating.no.bcf=out.data$SSL.rating.wo.bcf,SSL.Rating.bcf=out.data$SSL.rating.w.bcf)
 

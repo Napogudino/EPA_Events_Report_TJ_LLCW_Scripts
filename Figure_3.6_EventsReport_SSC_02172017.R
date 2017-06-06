@@ -40,33 +40,25 @@ mtext("SSC g/l",side = 4, line = 3)
 
 #find time of SSC samples #sample1, E1
 ftime = date.time
-target.time = as.POSIXct("2017-02-17 16:00:00",format="%Y-%m-%d %H:%M:%S")  # date and time # of the SSC sample
-difftime = ftime-target.time
-index = which(difftime==min(abs(difftime))) #absolute min time diff is when sample was taken (0 is at same time)
-match.data = q.cms[index] #discharge at that time
-q.cms[(index-10):(index+10)]
-date.time[index]
-q.data.all[index,]
+target.time = as.POSIXct("2017-02-27 14:00:00",format="%Y-%m-%d %H:%M:%S")  # date and time # of the SSC sample
+target.index = which(as.Date(format(dates.ssc,"%Y-%m-%d"))==as.Date("2017-02-17"))
+target.times = dates.ssc[target.index]
 
-#find time of SSC samples #sample2, E1
-ftime2 = date.time
-target.time2 = as.POSIXct("2017-02-17 17:00:00",format="%Y-%m-%d %H:%M:%S")  # date and time # of the SSC sample
-approx.q2 = approx(date.time, q.cms, target.time2) #interpolate the discharge at specified time
-match.data[2] = approx.q2$y #second discharge measurement
-
-#find time of SSC samples #sample3, E1
-ftime3 = date.time
-target.time3 = as.POSIXct("2017-02-17 20:30:00",format="%Y-%m-%d %H:%M:%S")  # date and time # of the SSC sample
-approx.q3 = approx(date.time, q.cms, target.time3) #interpolate the discharge at specified time
-match.data[3] = approx.q3$y #second discharge measurement
-
+match.data = rep(NA,times=length(target.times))
+for (e in 1:length(target.times)){
+  difftime = ftime-target.times[e]
+  index = which(abs(difftime)==min(abs(difftime))) #absolute min time diff is when sample was taken (0 is at same time)
+  match.data[e] = q.cms[index] #discharge at that time
+  #q.cms[(index-10):(index+10)]
+}
+match.data[match.data<0.07]=0.07
 ###############################################################################################################
 
 #Summary data for Table 3.1:
 match.data #the discharge at time of SSC collection
-ssc.date.time = c(target.time, target.time2, target.time3) #the date.time of SSC collecction
-ssc = x.ssc$g.l[14:16]
-EMC = mean(ssc)
+ssc.date.time = target.times #the date.time of SSC collecction
+ssc = x.ssc$g.l[target.index]
+#EMC = mean(ssc)
 storm = "Storm 9"
 Event = c("E1", "E1","E1")
 
@@ -75,21 +67,21 @@ names(table.3.1.export) <- c("Date", "SSC (g/L)", "Q (cms)", "Event")
 
 ###############################################################################################################
 #Table 3.3 Caculations
-#Volume weighted mean (VWM) = sum(C1*Q1, C2*Q2, Cn*Qn) / sum(Q1, Q2, Qn)
-VWM = sum(ssc*match.data)/sum(match.data) 
-EMC = mean(ssc) #Event mean concentration
 
-#Load = total q (m3) * VWM (g/L) * 1000L/1 m3 * 1e-6 tonne/g 
-#samples taken during E2 and E3, do not need E1 data for total.q.m3  
-total.q.m3 = total.q.obs.mm/1000*10230000 #convert to m, multiply by 10.23 km2 wtshd area or 10230000 m2
-load.g = VWM*total.q.m3*1000 #1000L = 1m3
-load.ton = load.g * 1e-6 #1 gram = 1e-6 ton
+q.df = data.frame(date.time=date.time,q.cms=q.cms)
+SSC.df = data.frame(date.time=dates.ssc,SSC=x.ssc$g.l)
+
+#total.q.m3 = total.q.obs.mm/1000*10230000 #convert to m, multiply by 10.23 km2 wtshd area or 10230000 m2
+#load.g = VWM*total.q.m3*1000 #1000L = 1m3
+#load.ton = load.g * 1e-6 #1 gram = 1e-6 ton
+
+#setwd('../EPA_Events_Report_TJ_LLCW_Scripts')
+#source("regression_models_SSC_vs_Q.R")
+out.data = SSL.calc(Q=q.df,SSC=SSC.df)
 
 #for table 3.3:
 date = obs.summary[,1] 
-event = obs.summary[,5] #second and third event
+event = obs.summary[,5] # Event number e.g. "E1"
 date.event = paste(date, event, sep=" ")
-table.3.3.export = data.frame(cbind(date.event, total.q.obs.mm, total.q.m3, load.ton, VWM, EMC)) 
-names(table.3.3.export) <- c("event.date", "total.q.mm", "total.q.m3", "load.ton", "VWM", "EMC")
-
+table.3.3.export = data.frame(event.date= date.event, NSSC=out.data$NSSC,total.q.mm=out.data$Qmm, total.q.m3=out.data$Qm3, VWM=out.data$VWM, SSL.Event.VWM=out.data$SSL.VWM.event,SSL.All.VWM=out.data$SSL.VWM.all,SSL.Rating.no.bcf=out.data$SSL.rating.wo.bcf,SSL.Rating.bcf=out.data$SSL.rating.w.bcf)
 

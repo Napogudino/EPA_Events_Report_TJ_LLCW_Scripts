@@ -38,29 +38,26 @@ mtext("SSC g/l",side = 4, line = 3)
 ###############################################################################################################
 #find discharge at time that SSC was collected
 
-#find time of SSC samples #sample1
 ftime = date.time
-target.time = as.POSIXct("2014-02-28 17:20:00",format="%Y-%m-%d %H:%M:%S")  # date and time # of the SSC sample
-difftime = ftime-target.time
-index = which(difftime==min(abs(difftime))) #absolute min time diff is when sample was taken (0 is at same time)
-match.data = q.cms[index] #discharge at that time
-q.cms[(index-10):(index+10)]
-date.time[index]
-q.data.all[index,] #to make sure E2 for that date.time
+#target.time = as.POSIXct("2017-02-27 14:00:00",format="%Y-%m-%d %H:%M:%S")  # date and time # of the SSC sample
+target.index = which(as.Date(format(dates.ssc,"%Y-%m-%d")) %in% as.Date(date.time))
+target.times = dates.ssc[target.index]
 
-#find time of SSC samples #sample2, E3
-ftime2 = date.time
-target.time2 = as.POSIXct("2014-03-01 07:40:00",format="%Y-%m-%d %H:%M:%S")  # date and time # of the SSC sample
-approx.q2 = approx(date.time, q.cms, target.time2) #interpolate the discharge at specified time
-match.data[2] = approx.q2$y #second discharge measurement
+match.data = rep(NA,times=length(target.times))
+for (e in 1:length(target.times)){
+  difftime = ftime-target.times[e]
+  index = which(abs(difftime)==min(abs(difftime))) #absolute min time diff is when sample was taken (0 is at same time)
+  match.data[e] = q.cms[index] #discharge at that time
+  #q.cms[(index-10):(index+10)]
+}
+match.data[match.data<0.07]=0.07
 
 ###############################################################################################################
 
 #Summary data for Table 3.1:
 match.data #the discharge at time of SSC collection
-ssc.date.time = c(target.time, target.time2) #the date.time of SSC collecction
-ssc = x.ssc$g.l[1:2]
-EMC = mean(ssc)
+ssc.date.time = c(target.times) #the date.time of SSC collecction
+ssc = x.ssc$g.l[target.index]
 storm = "Storm 1"
 Event = c("E2", "E3")
 
@@ -69,20 +66,25 @@ names(table.3.1.export) <- c("Date", "SSC (g/L)", "Q (cms)", "Event")
 ###############################################################################################################
 
 #Table 3.3 Caculations
-#SSC1: "2014-02-28 17:20:00 PST" during E2: 3/1/2014; SSC2: "2014-03-01 07:40:00 PST" during E3: 
-#Volume weighted mean (VWM) = sum(C1*Q1, C2*Q2, Cn*Qn) / sum(Q1, Q2, Qn)
-VWM = ssc*match.data/match.data #in this case, only 1 SSC ssample for each event, VWM= SSC
-EMC = ssc #only  one sample per event, event mean concentration = SSC
+startE2 = as.POSIXct("2014-02-28 15:50",format="%Y-%m-%d %H:%M")
+endE2 = as.POSIXct("2014-03-01 00:00",format="%Y-%m-%d %H:%M")
 
-#Load = total q (m3) * VWM (g/L) * 1000L/1 m3 * 1e-6 tonne/g 
-  #samples taken during E2 and E3, do not need E1 data for total.q.m3  
-total.q.m3 = total.q.obs.mm[2:3]/1000*10230000 #convert to m, multiply by 10.23 km2 wtshd area or 10230000 m2
-load.g = VWM*total.q.m3*1000 #1000L = 1m3
-load.ton = load.g * 1e-6 #1 gram = 1e-6 ton
+q.df.all = data.frame(date.time=date.time,q.cms=q.cms)
+q.df = q.df.all[(q.df.all$date.time<endE2) & (q.df.all$date.time>startE2),]
+SSC.df = data.frame(date.time=dates.ssc,SSC=x.ssc$g.l)
+
+#total.q.m3 = total.q.obs.mm/1000*10230000 #convert to m, multiply by 10.23 km2 wtshd area or 10230000 m2
+#load.g = VWM*total.q.m3*1000 #1000L = 1m3
+#load.ton = load.g * 1e-6 #1 gram = 1e-6 ton
+
+#setwd('../EPA_Events_Report_TJ_LLCW_Scripts')
+#source("regression_models_SSC_vs_Q.R")
+
+out.data = SSL.calc(Q=q.df,SSC=SSC.df)
 
 #for table 3.3:
-date = obs.summary[2:3,1] #second and third event
-event = obs.summary[2:3,5] #second and third event
-date.event = paste(date, event, sep=" ")
-table.3.3.export = data.frame(cbind(date.event, total.q.obs.mm[2:3], total.q.m3, load.ton, VWM, EMC)) 
-names(table.3.3.export) <- c("event.date", "total.q.mm", "total.q.m3", "load.ton", "VWM", "EMC")
+date = obs.summary[,1] 
+event = "E2" # Event number e.g. "E1"
+date.event = paste(date[1], event, sep=" ")
+table.3.3.export = data.frame(event.date= date.event, NSSC=out.data$NSSC,total.q.mm=out.data$Qmm, total.q.m3=out.data$Qm3, VWM=out.data$VWM, SSL.Event.VWM=out.data$SSL.VWM.event,SSL.All.VWM=out.data$SSL.VWM.all,SSL.Rating.no.bcf=out.data$SSL.rating.wo.bcf,SSL.Rating.bcf=out.data$SSL.rating.w.bcf)
+
