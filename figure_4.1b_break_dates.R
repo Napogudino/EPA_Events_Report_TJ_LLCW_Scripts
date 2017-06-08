@@ -15,7 +15,7 @@ tje.corr.2006.2012.totals = table.trap.efficiency[as.character(table.trap.effici
 # Load precip
   # IB
 P.IB = read.csv("climate_daily_IB_Napo.csv") 
-P.IB$Date = as.Date(strptime(paste0(precip$Month, "/", precip$Day, "/", precip$Year),format="%m/%d/%Y"))
+P.IB$Date = as.Date(strptime(paste0(P.IB$Month, "/", P.IB$Day, "/", P.IB$Year),format="%m/%d/%Y"))
 P.IB$month = as.numeric(format(P.IB$Date,"%m"))
 P.IB$year = as.numeric(format(P.IB$Date, "%Y"))
 P.IB$wy = P.IB$Year
@@ -72,16 +72,21 @@ P.SDBF.by.cut.date = aggregate(P.SDBF$PRCP.0.1MM,by=list(P.SDBF$cut.labels),FUN=
 tje.corr.2006.2012.totals$P.SDBF.by.cut.date.mm = c(NA,P.SDBF.by.cut.date$x/10)
 
 dev.new()
-par(mfrow=c(3,1),mar=c(2,0,0,0),oma=c(4,5,2,2))
-plot(tje.corr.2006.2012.totals$P.by.cut.date.mm,tje.corr.2006.2012.totals$Tons_removed_uncorrected,xlab="Precipitation between cleanings, mm",ylab="Tons removed",pch=20,cex=1.5,ylim=c(0,90000),xlim=c(0,600))
-points(tje.corr.2006.2012.totals$P.by.cut.date.mm,tje.corr.2006.2012.totals$Corrected_load_tons,pch=20,cex=1.5,col="grey")
-text()
+par(mfrow=c(2,1),mar=c(2,0,0,0),oma=c(4,5,2,2))
+#plot(tje.corr.2006.2012.totals$P.by.cut.date.mm,tje.corr.2006.2012.totals$Tons_removed_uncorrected,xlab="Precipitation between cleanings, mm",ylab="Tons removed",pch=20,cex=1.5,ylim=c(0,90000),xlim=c(0,600))
+#points(tje.corr.2006.2012.totals$P.by.cut.date.mm,tje.corr.2006.2012.totals$Corrected_load_tons,pch=20,cex=1.5,col="grey")
+#text()
 
-plot(tje.corr.2006.2012.totals$P.lind.by.cut.date.mm,tje.corr.2006.2012.totals$Tons_removed_uncorrected,xlab="Precipitation between cleanings, mm",ylab="Tons removed",pch=20,cex=1.5,ylim=c(0,90000),xlim=c(0,600))
-points(tje.corr.2006.2012.totals$P.lind.by.cut.date.mm,tje.corr.2006.2012.totals$Corrected_load_tons,pch=20,cex=1.5,col="grey")
-
-plot(tje.corr.2006.2012.totals$P.SDBF.by.cut.date.mm,tje.corr.2006.2012.totals$Tons_removed_uncorrected,xlab="Precipitation between cleanings, mm",ylab="Tons removed",pch=20,cex=1.5,ylim=c(0,90000),xlim=c(0,600))
-points(tje.corr.2006.2012.totals$P.SDBF.by.cut.date.mm,tje.corr.2006.2012.totals$Corrected_load_tons,pch=20,cex=1.5,col="grey")
+plot(tje.corr.2006.2012.totals$P.lind.by.cut.date.mm,tje.corr.2006.2012.totals$Tons_removed_uncorrected/1000,xlab="Precipitation between cleanings, mm",ylab="Tons removed",pch=20,cex=1.5,ylim=c(0,90000/1000),xlim=c(0,600),las=1)
+points(tje.corr.2006.2012.totals$P.lind.by.cut.date.mm,tje.corr.2006.2012.totals$Corrected_load_tons/1000,pch=20,cex=1.5,col="grey")
+#mtext(side=2,"Sediment load to traps, thousand tons",line=3)
+text(x=50,y=80000/1000,"A. Lind")
+plot(tje.corr.2006.2012.totals$P.SDBF.by.cut.date.mm,tje.corr.2006.2012.totals$Tons_removed_uncorrected/1000,pch=20,cex=1.5,ylim=c(0,90000/1000),xlim=c(0,600),las=1)
+points(tje.corr.2006.2012.totals$P.SDBF.by.cut.date.mm,tje.corr.2006.2012.totals$Corrected_load_tons/1000,pch=20,cex=1.5,col="grey")
+mtext(side=2,"                                                Sediment load to traps, tons",line=3)
+legend("bottomright",c("Uncorrected","Corrected"),pch=20,pt.cex=1.5,col=c("black","grey"),bty="n")
+mtext(side=1,"Precipitation between cleanings, mm",line=3)
+text(x=50,y=80000/1000,"B. SDBF")
 
 # Remove 2005
 tje.no2005 = tje.corr.2006.2012.totals[tje.corr.2006.2012.totals$Removal_WY_Date>=2006,]
