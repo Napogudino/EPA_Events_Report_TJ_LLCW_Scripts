@@ -7,6 +7,7 @@
 #SSC samples from this storm, see fig_3.3_EventsReport_SSC_03012015
 
 #Set working directory to the data folder, script directory will be used if sourcing functions
+setwd("G:/mydocuments/SDSU/research/tijuana_watershed/writeups/EPA_events_report/EPA_Events_Report_TJ_LLCW_Scripts")
 getwd() #the directory where the script is saved
 setwd('../EPA_Events_Report_TJ_LLCW_Data') #set working directory as the data folder, which is one folder back in it's own folder
 

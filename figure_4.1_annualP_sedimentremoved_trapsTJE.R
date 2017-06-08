@@ -14,6 +14,10 @@ setwd('../EPA_Events_Report_TJ_LLCW_Data') #set working directory as the data fo
 table.trap.efficiency = read.csv("sediment_loads_2006_2012_corrected_uncorrected_05182017.csv") #table with date and total excavation from TJE traps
 tje.corr.2006.2012.totals = table.trap.efficiency[as.character(table.trap.efficiency$Sed_size) == "Total",] #only use annual totals
 
+# Load trap cleaning dates
+
+
+
 ###############################################################################################################
 
 #Annual Precip from Imperial Beach (IB) Airport Met station: from Napo, used in AGNPS rainfall timeseries
