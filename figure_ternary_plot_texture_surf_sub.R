@@ -2,7 +2,7 @@
 
 library(vcd)
 
-indir.survey = "G:/mydocuments/SDSU/research/tijuana_watershed/los_laureles_canyon/soil_texture/"
+indir.survey = "G:/mydocuments/SDSU/research/tijuana_watershed/writeups/EPA_events_report/EPA_Events_Report_TJ_LLCW_Data/"
 fname.survey = "napoleon_texture_LLCW_mapping_2015_in_report.csv"
 
 indir.AMEC = "G:/mydocuments/SDSU/research/tijuana_watershed/los_laureles_canyon/sed_traps/from_TNERR_2010_2015/texture/"
@@ -19,9 +19,8 @@ x.AMEC = read.csv(paste0(indir.AMEC,fname.AMEC),stringsAsFactors = FALSE)
 #x.2017.t.totals = rowSums(x.2017.t)
 #x.2017.t$SiltClay = round(x.2017.t$X1/x.2017.t.totals,3)
 
-
 x.all = rbind(x.surv,x.AMEC)
-index.toplot = grep("SURF|SUB|MXSB|USTRAP",x.all$Geology) # includes MX SBasin samples
+index.toplot = grep("SC.SURF|SC.SUB|CG.SURF|CG.SUB|MXSB|USTRAP",x.all$Geology) # includes MX SBasin samples
 x.all$Total = rowSums(x.all[,3:7])
 x.all$Tfines = rowSums(x.all[,5:7]) 
 x.all$Sand.norm = x.all$Sand/x.all$Tfines
@@ -30,8 +29,8 @@ x.all$Clay.norm = x.all$Clay/x.all$Tfines
 x.all.H = x.all[index.toplot,]
 x.all.H.simple = data.frame(Geology=x.all.H$Geology,Sand=x.all.H$Sand.norm,Silt=x.all.H$Silt.norm,Clay=x.all.H$Clay.norm)
 
-x.all.means = aggregate(x.all.H.simple,by=x.all.H.simple$Geology)
-
+x.all.means = aggregate(x.all.H.simple[,c("Sand","Silt","Clay")],by=list(x.all.H.simple$Geology),FUN="mean")
+x.all.means.round = round(100*x.all.means[,c("Sand","Silt","Clay")],0)
 
 # Set geology label for plotting
 SC.SURF.index = grep("SC.SURF",x.all.H.simple$Geology)
