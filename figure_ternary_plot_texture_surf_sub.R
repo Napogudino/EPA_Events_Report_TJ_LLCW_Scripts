@@ -35,20 +35,30 @@ x.all.means = aggregate(x.all.H.simple,by=x.all.H.simple$Geology)
 
 # Set geology label for plotting
 SC.SURF.index = grep("SC.SURF",x.all.H.simple$Geology)
-SC.SUB.index = grep("SC.SURF",x.all.H.simple$Geology)
+SC.SUB.index = grep("SC.SUB",x.all.H.simple$Geology)
 CG.SURF.index = grep("CG.SURF",x.all.H.simple$Geology)
 CG.SUB.index = grep("CG.SUB",x.all.H.simple$Geology)
 MXSB.index = grep("MXSB",x.all.H.simple$Geology)
 USTRAP.index = grep("USTRAP",x.all.H.simple$Geology)
 pvec = c(19,19,15,15,0,2)
-pchvec.all = rep(pvec[1],times=length(x.all.H$Geology))  # set plotting symbol type
-pchvec.all[CG.index] = pvec[2]
-pchvec.all[MXSB.index] = pvec[3]
-pchvec.all[USTRAP.index] = pvec[4]
+pchvec.all = rep(pvec[1],times=length(x.all.H$Geology))  # set plotting symbol type, first all to pch=1
+pchvec.all[SC.SUB.index] = pvec[2]
+pchvec.all[CG.SURF.index] = pvec[3]
+pchvec.all[CG.SUB.index] = pvec[4]
+pchvec.all[MXSB.index] = pvec[5]
+pchvec.all[USTRAP.index] = pvec[6]
+
+col.vec = c("black","grey","black","grey","black","black")
+colvec.all = rep(col.vec[1],times=length(x.all.H$Geology))  # set plotting symbol type, first all to pch=1
+colvec.all[SC.SUB.index] = col.vec[2]
+colvec.all[CG.SURF.index] = col.vec[3]
+colvec.all[CG.SUB.index] = col.vec[4]
+colvec.all[MXSB.index] = col.vec[5]
+colvec.all[USTRAP.index] = col.vec[6]
 
 #ternaryplot(data.frame(x.surv.H$Sand.norm,x.surv.H$Silt.norm,x.surv.H$Clay.norm),pch=pchvec.surv,col="black",main="",dimnames=c("Sand","Silt","Clay"))
-ternaryplot(data.frame(x.all.H.simple$Sand,x.all.H.simple$Silt,x.all.H.simple$Clay),pch=pchvec.all,col="black",main="",dimnames=c("Sand","Silt","Clay"))
-grid_legend(0.7,0.7,pch=pvec,col="black",labels=c("SC","CG","MXSB","USTRAP, AMEC"))
+ternaryplot(data.frame(x.all.H.simple$Sand,x.all.H.simple$Silt,x.all.H.simple$Clay),pch=pchvec.all,col=colvec.all,main="",dimnames=c("Sand","Silt","Clay"))
+grid_legend(0.75,0.75,pch=pvec,col=col.vec,labels=c("SC.SURF","SC.SUB","CG.SURF","CG.SUB","MXSB","USTRAP, AMEC"))
 
 
 
